@@ -1,0 +1,39 @@
+{
+  "query": {
+    "range" : {
+      "record_date" : {"gte" : "2019-04-24T15:04:23.000Z",
+        "lte":"2019-07-22T15:04:23.000Z"}
+
+    }
+  },
+  "size": 0,
+  "aggs" : {
+    "my_buckets": {
+      "composite" : {
+        "sources" : [
+          { "name": { "terms" : { "field": "name" } } },
+          { "tags": { "terms" : { "field": "tags" } } }
+        ],
+        "size":1000,
+        "after":{"name":"","tags":""}
+      },
+      "aggs": {
+        "top_record": {
+          "top_hits": {
+            "sort": [
+              {
+                "record_date": {
+                  "order": "desc"
+                }
+              }
+            ],
+            "_source": {
+              "includes": [ "name","tags", "record_date" ]
+            },
+            "size" : 1
+          }
+        }
+      }
+    }
+  }
+}

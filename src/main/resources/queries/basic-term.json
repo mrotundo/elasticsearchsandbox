@@ -1,0 +1,12 @@
+{
+  "size": 10000,
+  "query": {
+    "constant_score": {
+      "filter": {
+        "term": {
+          "name": "reindeer"
+        }
+      }
+    }
+  }
+}

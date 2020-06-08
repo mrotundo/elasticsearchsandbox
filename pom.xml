@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>io.rotundo</groupId>
-	<artifactId>elastictest</artifactId>
+	<artifactId>elasticsearchsandbox</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>elastictest</name>
-	<description>Elasticsearch Testing</description>
+	<description>Elasticsearch Sandbox</description>
 
 	<properties>
 		<java.version>1.8</java.version>

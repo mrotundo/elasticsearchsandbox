@@ -1,9 +1,6 @@
 package io.rotundo.elastictest;
 
 import io.rotundo.elastictest.service.ElasticsearchService;
-import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -11,11 +8,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
-import javax.annotation.PreDestroy;
-
 
 @SpringBootApplication
-public class ElastictestApplication {
+public class ElasticsearchSandboxApplication {
 
 	@Autowired
 	public ElasticsearchService elasticsearchService;
@@ -23,7 +18,7 @@ public class ElastictestApplication {
 
 
 	public static void main(String[] args) {
-		SpringApplication.run(ElastictestApplication.class, args);
+		SpringApplication.run(ElasticsearchSandboxApplication.class, args);
 	}
 
 	@Bean
@@ -32,13 +27,12 @@ public class ElastictestApplication {
 
 			System.out.println("It has begun!");
 
-
-/*
+			//commented out - will run the bulk insert indefinitely
+			/*
 			while(true){
 				elasticsearchService.createBulkRecords();
 			}
-
- */
+ 			*/
 		};
 	}
 

@@ -1,7 +1,10 @@
 package io.rotundo.elastictest.service;
 
 import com.github.javafaker.Faker;
+import io.rotundo.elastictest.util.Util;
 import org.apache.http.HttpHost;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.impl.client.BasicResponseHandler;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -12,14 +15,16 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
 import javax.management.Query;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,36 +36,116 @@ public class ElasticsearchService {
 
     protected RestHighLevelClient client;
 
+    //@Value("${elasticsearch.host}")
+    protected String elasticsearchHost;
+
+
     public ElasticsearchService(){
+        //@TODO: move host info to config
+        elasticsearchHost = "192.168.1.175";
+
         client = new RestHighLevelClient(
                 RestClient.builder(
-                        new HttpHost("192.168.1.175", 9200, "http")));
+                        new HttpHost(elasticsearchHost, 9200, "http")));
+    }
+
+    public long runAggregationQueryContinuous(String indexName, JSONObject query) throws Exception{
+        JSONObject response = runQuery(indexName,query);
+
+        long count = getAggregationResultCount(response);
+        if(count==0){
+            System.out.println("done");
+            return 0;
+        }
+
+        JSONObject after = getAggregationAfter(response);
+        query = setAggregationAfter(query,after);
+
+        return count + runAggregationQueryContinuous(indexName,query);
+    }
+
+    public JSONObject runQueryWithScroll(String indexName, JSONObject query) throws Exception{
+        RestClient restClient = client.getLowLevelClient();
+        Request request = new Request( "POST", "/"+indexName+"/_search?scroll=1m");
+        request.setJsonEntity(query.toString());
+        Response response = restClient.performRequest(request);
+
+        OutputStream os = new ByteArrayOutputStream();
+        response.getEntity().writeTo(os);
+
+        String output = os.toString();
+        JSONParser parser = new JSONParser();
+        JSONObject responseObject = (JSONObject) parser.parse(output);
+
+        long count = getResultCount(responseObject);
+        String scrollId = getScrollId(responseObject);
+
+        System.out.println("num records: " + count);
+        System.out.println("scroll: "+ scrollId);
+
+        long curCount = -1;
+        while(curCount!=0&&scrollId!=null){
+            JSONObject scrollResponse = scroll(scrollId);
+            curCount = getResultCount(scrollResponse);
+            scrollId = getScrollId(scrollResponse);
+            count += curCount;
+        }
+
+        JSONObject compiledResponse = new JSONObject();
+        compiledResponse.put("count",count);
+
+        return compiledResponse;
     }
 
 
-
-    public JSONObject runQuery(String indexName, String query) throws Exception{
+    public JSONObject runQuery(String indexName, JSONObject query) throws Exception{
 
         RestClient restClient = client.getLowLevelClient();
         Request request = new Request( "POST", "/"+indexName+"/_search");
-        request.setJsonEntity(query);
+        request.setJsonEntity(query.toString());
         Response response = restClient.performRequest(request);
 
-        String output = "";
-        try (Reader reader = new InputStreamReader(response.getEntity().getContent())) {
+        OutputStream os = new ByteArrayOutputStream();
+        response.getEntity().writeTo(os);
 
-            int data = reader.read();
-            while(data != -1){
-                char dataChar = (char) data;
-                data = reader.read();
-                output +=dataChar;
-            }
-        }
-
+        String output = os.toString();
         JSONParser parser = new JSONParser();
         JSONObject out = (JSONObject) parser.parse(output);
 
         return out;
+    }
+
+    public JSONObject scroll(String scrollId) throws Exception{
+        RestClient restClient = client.getLowLevelClient();
+        Request request = new Request( "POST", "/_search/scroll");
+
+        JSONObject requestObject = new JSONObject();
+        requestObject.put("scroll","1m");
+        requestObject.put("scroll_id",scrollId);
+
+        request.setJsonEntity(requestObject.toString());
+        Response response = restClient.performRequest(request);
+
+        OutputStream os = new ByteArrayOutputStream();
+        response.getEntity().writeTo(os);
+
+        String output = os.toString();
+        JSONParser parser = new JSONParser();
+        JSONObject out = (JSONObject) parser.parse(output);
+
+        return out;
+    }
+
+
+
+    public boolean createIndexes() throws Exception{
+        //@TODO: implement
+        /*
+            Index List
+                - indextwo
+                - indexone-YYYY.MM (for all of 2019)
+         */
+        return false;
     }
 
     public boolean createBulkRecords() throws Exception{
@@ -76,7 +161,6 @@ public class ElasticsearchService {
                 String monthString = month>9?month.toString():"0"+month;
                 //String indexName = "indexone-"+year+"."+monthString;
                 String indexName = "indextwo";
-
 
                 LocalDateTime date1 = LocalDateTime.of(year,month,faker.number().numberBetween(1,28),faker.number().numberBetween(0,23),faker.number().numberBetween(0,59),faker.number().numberBetween(0,59));
                 LocalDateTime date2 = LocalDateTime.of(year,month,faker.number().numberBetween(1,28),faker.number().numberBetween(0,23),faker.number().numberBetween(0,59),faker.number().numberBetween(0,59));
@@ -98,7 +182,6 @@ public class ElasticsearchService {
                 record.put("record_date", date1Text);
                 record.put("index_date", date2Text);
 
-
                 IndexRequest request = new IndexRequest(indexName);
                 request.source(record, XContentType.JSON);
 
@@ -117,4 +200,26 @@ public class ElasticsearchService {
         client.close();
         System.out.println("shutdown");
     }
+
+    protected long getAggregationResultCount(JSONObject response) throws Exception{
+        return ((JSONArray)Util.getNestedJsonObject(response,"aggregations","my_buckets","buckets")).size();
+    }
+
+    protected long getResultCount(JSONObject response) throws Exception{
+        return ((JSONArray)Util.getNestedJsonObject(response,"hits","hits")).size();
+    }
+
+    protected String getScrollId(JSONObject response) throws Exception{
+        return (String)Util.getNestedJsonObject(response,"_scroll_id");
+    }
+
+    protected JSONObject getAggregationAfter(JSONObject response) throws Exception{
+        return (JSONObject)Util.getNestedJsonObject(response,"aggregations","my_buckets","after_key");
+    }
+
+    protected JSONObject setAggregationAfter(JSONObject query, JSONObject after) throws Exception{
+        return Util.setNestedJsonObject(query,after,"aggs","my_buckets","composite","after");
+    }
+
+
 }
