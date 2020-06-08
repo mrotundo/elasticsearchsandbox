@@ -1,0 +1,348 @@
+{
+	"info": {
+		"_postman_id": "6de3a018-7be9-48bf-937a-540f89713e7d",
+		"name": "elasticsearchsandbox",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "elastic",
+			"item": [
+				{
+					"name": "snapshot",
+					"item": [
+						{
+							"name": "register",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"type\": \"fs\",\r\n  \"settings\": {\r\n    \"location\": \"main_backup\"\r\n  }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://192.168.1.175:9200/_snapshot/main_backup",
+									"protocol": "http",
+									"host": [
+										"192",
+										"168",
+										"1",
+										"175"
+									],
+									"port": "9200",
+									"path": [
+										"_snapshot",
+										"main_backup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create snapshot",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"ignore_unavailable\": true,\r\n  \"include_global_state\": false,\r\n  \"metadata\": {\r\n    \"taken_by\": \"developer\",\r\n    \"taken_because\": \"backup always\"\r\n  }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://192.168.1.175:9200/_snapshot/main_backup/snapshot_test_2?wait_for_completion=true",
+									"protocol": "http",
+									"host": [
+										"192",
+										"168",
+										"1",
+										"175"
+									],
+									"port": "9200",
+									"path": [
+										"_snapshot",
+										"main_backup",
+										"snapshot_test_2"
+									],
+									"query": [
+										{
+											"key": "wait_for_completion",
+											"value": "true"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "create",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"mappings\": {\r\n    \"properties\": {\r\n      \"name\": {\r\n        \"type\": \"keyword\"\r\n      },\r\n      \"tags\": {\r\n        \"type\": \"keyword\"\r\n      },\r\n      \"description\": {\r\n        \"type\": \"text\"\r\n      },\r\n      \"val\": {\r\n        \"type\": \"integer\"\r\n      },\r\n      \"record_date\": {\r\n        \"type\": \"date\"\r\n      },\r\n      \"index_date\": {\r\n        \"type\": \"date\"\r\n      }\r\n    }\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.175:9200/indexone-2019.12",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"175"
+							],
+							"port": "9200",
+							"path": [
+								"indexone-2019.12"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "insert",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://192.168.1.175:9200/indexone*/_search",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"175"
+							],
+							"port": "9200",
+							"path": [
+								"indexone*",
+								"_search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "agg-bucket",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"size\":0,\r\n\r\n \"query\": {\r\n        \"constant_score\" : {\r\n            \"filter\" : {\r\n                \"term\" : {\"name\" : \"reindeer\"}\r\n            }\r\n        }\r\n    },\r\n\r\n   \"aggs\" : {\r\n        \"sales_over_time\" : {\r\n            \"date_histogram\" : {\r\n                \"field\" : \"record_date\",\r\n                \"calendar_interval\" : \"1M\"\r\n            },\r\n             \"aggs\" : {\r\n\t\t        \"another\" : {\r\n\t\t            \"date_histogram\" : {\r\n\t\t                \"field\" : \"index_date\",\r\n\t\t                \"calendar_interval\" : \"1d\"\r\n\t\t            }\r\n\t\t        }\r\n\t\t    }\r\n        }\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.175:9200/indexone*/_search",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"175"
+							],
+							"port": "9200",
+							"path": [
+								"indexone*",
+								"_search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "agg-composite",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t \"query\": {\r\n            \"range\" : {\r\n                \"val\" : {\"gte\" : 100,\"lte\":9000}\r\n            \r\n        }\r\n    },\r\n    \"size\": 0,\r\n    \"aggs\" : {\r\n        \"my_buckets\": {\r\n            \"composite\" : {\r\n                \"sources\" : [\r\n                    { \"name\": { \"terms\" : { \"field\": \"name\" } } },\r\n                    { \"tags\": { \"terms\" : { \"field\": \"tags\" } } }\r\n                ],\r\n\t\t        \"size\":10000,\r\n\t\t        \"after\":{\"name\":\"\",\"tags\":\"\"}\r\n            },\r\n\t\t        \"aggs\": { \"min_date\": { \"min\": {\"field\":\"record_date\"} } ,\r\n\t\t        \"max_date\": { \"max\": {\"field\":\"record_date\"} } ,\r\n\t\t        \"avg_date\": { \"avg\": {\"field\":\"record_date\"} } }\r\n        }\r\n     }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.175:9200/indexone*/_search",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"175"
+							],
+							"port": "9200",
+							"path": [
+								"indexone*",
+								"_search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "agg-bi-temporal",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t \"query\": {\r\n            \"range\" : {\r\n                \"record_date\" : {\"gte\" : \"2019-04-24T15:04:23.000Z\",\r\n                \t\t\"lte\":\"2019-07-22T15:04:23.000Z\"}\r\n            \r\n        }\r\n    },\r\n    \"size\": 0,\r\n    \"aggs\" : {\r\n        \"my_buckets\": {\r\n            \"composite\" : {\r\n                \"sources\" : [\r\n                    { \"name\": { \"terms\" : { \"field\": \"name\" } } },\r\n                    { \"tags\": { \"terms\" : { \"field\": \"tags\" } } }\r\n                ],\r\n\t\t        \"size\":10000,\r\n\t\t        \"after\":{\"name\":\"\",\"tags\":\"\"}\r\n            },\r\n\t\t        \"aggs\": {\r\n\t                \"top_record\": {\r\n\t                    \"top_hits\": {\r\n\t                        \"sort\": [\r\n\t                            {\r\n\t                                \"record_date\": {\r\n\t                                    \"order\": \"desc\"\r\n\t                                }\r\n\t                            }\r\n\t                        ],\r\n\t                        \"_source\": {\r\n\t                            \"includes\": [ \"name\",\"tags\", \"record_date\" ]\r\n\t                        },\r\n\t                        \"size\" : 1\r\n\t                    }\r\n\t                }\r\n\t\t        }\r\n        }\r\n     }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.175:9200/indexone*/_search",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"175"
+							],
+							"port": "9200",
+							"path": [
+								"indexone*",
+								"_search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "count",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://192.168.1.175:9200/indexone*/_search",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"175"
+							],
+							"port": "9200",
+							"path": [
+								"indexone*",
+								"_search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"mappings\": {\r\n    \"properties\": {\r\n      \"name\": {\r\n        \"type\": \"keyword\"\r\n      },\r\n      \"tags\": {\r\n        \"type\": \"keyword\"\r\n      },\r\n      \"description\": {\r\n        \"type\": \"text\"\r\n      },\r\n      \"val\": {\r\n        \"type\": \"integer\"\r\n      },\r\n      \"record_date\": {\r\n        \"type\": \"date\"\r\n      },\r\n      \"index_date\": {\r\n        \"type\": \"date\"\r\n      }\r\n    }\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.175:9200/indexone",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"175"
+							],
+							"port": "9200",
+							"path": [
+								"indexone"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "api",
+			"item": [
+				{
+					"name": "ingest",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/test?year=2019&month=9&numBatches=10",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"test"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2019"
+								},
+								{
+									"key": "month",
+									"value": "9"
+								},
+								{
+									"key": "numBatches",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

@@ -1,0 +1,24 @@
+{
+  "mappings": {
+    "properties": {
+      "name": {
+        "type": "keyword"
+      },
+      "tags": {
+        "type": "keyword"
+      },
+      "description": {
+        "type": "text"
+      },
+      "val": {
+        "type": "integer"
+      },
+      "record_date": {
+        "type": "date"
+      },
+      "index_date": {
+        "type": "date"
+      }
+    }
+  }
+}
