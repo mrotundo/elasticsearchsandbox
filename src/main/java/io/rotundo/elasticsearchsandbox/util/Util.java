@@ -1,4 +1,4 @@
-package io.rotundo.elastictest.util;
+package io.rotundo.elasticsearchsandbox.util;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;

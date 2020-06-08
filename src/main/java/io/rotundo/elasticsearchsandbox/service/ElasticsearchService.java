@@ -1,35 +1,22 @@
-package io.rotundo.elastictest.service;
+package io.rotundo.elasticsearchsandbox.service;
 
 import com.github.javafaker.Faker;
-import io.rotundo.elastictest.util.Util;
+import io.rotundo.elasticsearchsandbox.util.Util;
 import org.apache.http.HttpHost;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.impl.client.BasicResponseHandler;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.client.*;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
-import javax.management.Query;
 import java.io.*;
-import java.nio.file.Files;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Optional;
 
 @Service
 public class ElasticsearchService {

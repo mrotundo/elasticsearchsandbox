@@ -1,6 +1,6 @@
-package io.rotundo.elastictest;
+package io.rotundo.elasticsearchsandbox;
 
-import io.rotundo.elastictest.service.ElasticsearchService;
+import io.rotundo.elasticsearchsandbox.service.ElasticsearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
