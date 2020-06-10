@@ -146,8 +146,8 @@ public class ElasticsearchService {
                 Integer year = 2019;
                 Integer month = faker.number().numberBetween(1,12);
                 String monthString = month>9?month.toString():"0"+month;
-                //String indexName = "indexone-"+year+"."+monthString;
-                String indexName = "indextwo";
+                String indexName = "indexone-"+year+"."+monthString;
+                //String indexName = "indextwo";
 
                 LocalDateTime date1 = LocalDateTime.of(year,month,faker.number().numberBetween(1,28),faker.number().numberBetween(0,23),faker.number().numberBetween(0,59),faker.number().numberBetween(0,59));
                 LocalDateTime date2 = LocalDateTime.of(year,month,faker.number().numberBetween(1,28),faker.number().numberBetween(0,23),faker.number().numberBetween(0,59),faker.number().numberBetween(0,59));

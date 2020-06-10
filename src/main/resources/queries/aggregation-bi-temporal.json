@@ -1,9 +1,8 @@
 {
   "query": {
     "range" : {
-      "record_date" : {"gte" : "2019-04-24T15:04:23.000Z",
+      "record_date" : {
         "lte":"2019-07-22T15:04:23.000Z"}
-
     }
   },
   "size": 0,
